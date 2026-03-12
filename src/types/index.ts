@@ -2,6 +2,8 @@ export interface ImageMetadata {
   id: string
   originalName: string
   filename: string
+  /** Fully-resolved public URL to the image (blob URL in prod, absolute local URL in dev) */
+  imageUrl: string
   mimetype: string
   size: number
   uploadedAt: string

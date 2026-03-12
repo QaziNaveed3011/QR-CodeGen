@@ -1,27 +1,11 @@
-import { readFileSync, existsSync } from 'fs'
-import { join } from 'path'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Download, ArrowLeft, CalendarDays, HardDrive, FileImage } from 'lucide-react'
 import Navbar from '@/components/Navbar'
-import type { ImageMetadata } from '@/types'
+import { getMetadata } from '@/lib/storage'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-function getMetadata(id: string): ImageMetadata | null {
-  // Validate id is a UUID to prevent path traversal
-  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-  if (!UUID_RE.test(id)) return null
-
-  const metaPath = join(process.cwd(), 'data', 'uploads', `${id}.json`)
-  if (!existsSync(metaPath)) return null
-
-  try {
-    return JSON.parse(readFileSync(metaPath, 'utf-8')) as ImageMetadata
-  } catch {
-    return null
-  }
-}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -46,11 +30,8 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const meta = getMetadata(id)
+  const meta = await getMetadata(id)
   if (!meta) return { title: 'Image Not Found' }
-
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
-  const imageUrl = `${baseUrl}/uploads/${meta.filename}`
 
   return {
     title: `${meta.originalName} — QRShare`,
@@ -58,14 +39,14 @@ export async function generateMetadata({
     openGraph: {
       title: meta.originalName,
       description: 'Shared via QRShare',
-      images: [{ url: imageUrl, alt: meta.originalName }],
+      images: [{ url: meta.imageUrl, alt: meta.originalName }],
       type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
       title: meta.originalName,
       description: 'Shared via QRShare',
-      images: [imageUrl],
+      images: [meta.imageUrl],
     },
   }
 }
@@ -73,10 +54,10 @@ export async function generateMetadata({
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default async function ImagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const meta = getMetadata(id)
+  const meta = await getMetadata(id)
   if (!meta) notFound()
 
-  const imageUrl = `/uploads/${meta.filename}`
+  const imageUrl = meta.imageUrl
 
   return (
     <>

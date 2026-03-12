@@ -71,20 +71,20 @@ export default function HomePage() {
           aria-label="hero"
         >
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-brand-600/15 border border-brand-500/25 rounded-full px-4 py-1.5 mb-7">
+          <div className="inline-flex items-center gap-2 bg-brand-600/15 border border-brand-500/25 rounded-full px-4 py-1.5 mb-5 sm:mb-7">
             <Sparkles className="w-3.5 h-3.5 text-brand-400" aria-hidden />
             <span className="text-brand-300 text-xs font-semibold tracking-wide uppercase">
               Upload · Generate · Share
             </span>
           </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold leading-tight tracking-tight mb-5">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold leading-tight tracking-tight mb-3 sm:mb-5">
             Your image,
             <br />
             <span className="text-gradient">one QR away.</span>
           </h1>
 
-          <p className="text-white/55 text-lg sm:text-xl max-w-xl mx-auto leading-relaxed">
+          <p className="text-white/55 text-sm sm:text-xl max-w-xl mx-auto leading-relaxed">
             Upload any image and instantly get a QR code. Share it — anyone who
             scans it lands right on your image.
           </p>

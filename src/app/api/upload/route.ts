@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
-import { join } from 'path'
 import type { ImageMetadata, UploadResponse } from '@/types'
+import { storeImage, storeMetadata } from '@/lib/storage'
 
 // ── Constants ────────────────────────────────────────────────────────────────
-const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads')
-const DATA_DIR = join(process.cwd(), 'data', 'uploads')
 const MAX_SIZE = 10 * 1024 * 1024 // 10 MB
 
 const ALLOWED_MIME_TYPES = new Set([
@@ -17,12 +13,6 @@ const ALLOWED_MIME_TYPES = new Set([
 ])
 
 const ALLOWED_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp'])
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-async function ensureDirectories() {
-  if (!existsSync(UPLOAD_DIR)) await mkdir(UPLOAD_DIR, { recursive: true })
-  if (!existsSync(DATA_DIR)) await mkdir(DATA_DIR, { recursive: true })
-}
 
 // ── Route handler ────────────────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
@@ -44,10 +34,7 @@ export async function POST(request: NextRequest) {
 
     const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
     if (!ALLOWED_EXTENSIONS.has(ext)) {
-      return NextResponse.json(
-        { error: 'Invalid file extension.' },
-        { status: 415 },
-      )
+      return NextResponse.json({ error: 'Invalid file extension.' }, { status: 415 })
     }
 
     if (file.size > MAX_SIZE) {
@@ -57,31 +44,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // ── Persist file ─────────────────────────────────────────────────────────
-    await ensureDirectories()
-
+    // ── Store image ───────────────────────────────────────────────────────────
     const id = crypto.randomUUID()
     const filename = `${id}.${ext}`
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    await writeFile(join(UPLOAD_DIR, filename), buffer)
+    const imageUrl = await storeImage(id, ext, buffer, file.type)
 
-    // ── Persist metadata (outside public/) ───────────────────────────────────
+    // ── Store metadata ────────────────────────────────────────────────────────
     const metadata: ImageMetadata = {
       id,
-      originalName: file.name.replace(/[^\w.\-]/g, '_'), // sanitise display name
+      originalName: file.name.replace(/[^\w.\-]/g, '_'),
       filename,
+      imageUrl,
       mimetype: file.type,
       size: file.size,
       uploadedAt: new Date().toISOString(),
     }
 
-    await writeFile(
-      join(DATA_DIR, `${id}.json`),
-      JSON.stringify(metadata, null, 2),
-    )
+    await storeMetadata(id, metadata)
 
     // ── Build response ────────────────────────────────────────────────────────
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
@@ -90,7 +73,7 @@ export async function POST(request: NextRequest) {
     const response: UploadResponse = {
       id,
       filename,
-      imageUrl: `${baseUrl}/uploads/${filename}`,
+      imageUrl,
       imagePageUrl,
       metadata,
     }
