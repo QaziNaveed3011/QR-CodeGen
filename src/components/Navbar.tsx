@@ -11,7 +11,7 @@ export default function Navbar() {
             href="/"
             className="flex items-center gap-2.5 group focus-visible:outline-none"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200">
               <QrCode className="w-5 h-5 text-white" />
             </div>
             <span className="text-white font-semibold text-lg tracking-tight">
