@@ -4,8 +4,8 @@
 
 /* ── Custom properties ──────────────────────────────────────── */
 :root {
-  --bg-start: #07031a;
-  --bg-end: #110630;
+  --bg-start: #020f0e;
+  --bg-end:   #051a18;
 }
 
 /* ── Base ───────────────────────────────────────────────────── */
@@ -41,28 +41,28 @@ body {
 
   /* Gradient text */
   .text-gradient {
-    background: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #60a5fa 100%);
+    background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 50%, #0ea5e9 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Purple glow */
+  /* Teal glow */
   .glow-purple {
-    box-shadow: 0 0 40px rgba(124, 58, 237, 0.35), 0 0 80px rgba(124, 58, 237, 0.15);
+    box-shadow: 0 0 40px rgba(13, 148, 136, 0.4), 0 0 80px rgba(13, 148, 136, 0.18);
   }
 
   /* Glow on hover */
   .hover-glow:hover {
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+    box-shadow: 0 0 20px rgba(13, 148, 136, 0.45);
     transform: translateY(-1px);
   }
 
   /* Drag-active border glow */
   .drag-active {
-    border-color: #7c3aed !important;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3), 0 0 40px rgba(124, 58, 237, 0.2);
-    background: rgba(124, 58, 237, 0.08) !important;
+    border-color: #0d9488 !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.3), 0 0 40px rgba(13, 148, 136, 0.2);
+    background: rgba(13, 148, 136, 0.08) !important;
   }
 }
 

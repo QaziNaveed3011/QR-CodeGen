@@ -16,15 +16,13 @@ const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN
 
 /**
  * Persist an image buffer and return its public-accessible URL.
+ * @param filename  Final sanitized filename (including extension) to store under.
  */
 export async function storeImage(
-  id: string,
-  ext: string,
+  filename: string,
   buffer: Buffer,
   mimetype: string,
 ): Promise<string> {
-  const filename = `${id}.${ext}`
-
   if (USE_BLOB) {
     const { put } = await import('@vercel/blob')
     const blob = await put(`uploads/${filename}`, buffer, {

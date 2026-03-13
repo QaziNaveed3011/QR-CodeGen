@@ -1,27 +1,9 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Download, ArrowLeft, CalendarDays, HardDrive, FileImage } from 'lucide-react'
+import { Download, ArrowLeft } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { getMetadata } from '@/lib/storage'
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / 1024 / 1024).toFixed(2)} MB`
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 // ── Metadata export ──────────────────────────────────────────────────────────
 export async function generateMetadata({
@@ -63,101 +45,47 @@ export default async function ImagePage({ params }: { params: Promise<{ id: stri
     <>
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-10 max-w-4xl">
-        {/* Back */}
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-white/40 hover:text-white/80 text-sm mb-8 transition-colors duration-200 group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" />
-          Back to upload
-        </Link>
-
-        {/* Image card */}
-        <div className="glass-card rounded-3xl overflow-hidden mb-6">
-          <div className="relative w-full bg-[#07031a]/60">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imageUrl}
-              alt={meta.originalName}
-              className="mx-auto max-h-[70vh] w-auto object-contain py-6 px-4"
-            />
-          </div>
+      <main className="flex-1 flex flex-col">
+        {/* Full-width image viewer */}
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt={meta.originalName}
+            className="max-h-[82vh] max-w-full w-auto object-contain rounded-2xl shadow-2xl"
+          />
         </div>
 
-        {/* Meta + actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Info */}
-          <div className="glass-card rounded-2xl p-5 space-y-3">
-            <p className="text-white/40 text-xs uppercase tracking-widest font-medium mb-4">
-              File Details
+        {/* Minimal bottom bar */}
+        <div className="sticky bottom-0 glass-light border-t border-white/[0.06] py-3 px-6">
+          <div className="container mx-auto max-w-5xl flex items-center justify-between gap-4">
+            {/* Filename */}
+            <p className="text-white/50 text-sm truncate hidden sm:block">
+              {meta.originalName}
             </p>
 
-            <InfoRow
-              Icon={FileImage}
-              label="Filename"
-              value={meta.originalName}
-            />
-            <InfoRow
-              Icon={HardDrive}
-              label="Size"
-              value={formatBytes(meta.size)}
-            />
-            <InfoRow
-              Icon={CalendarDays}
-              label="Uploaded"
-              value={formatDate(meta.uploadedAt)}
-            />
-          </div>
+            {/* Actions */}
+            <div className="flex items-center gap-3 ml-auto">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm transition-colors duration-200 group"
+              >
+                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" />
+                New QR
+              </Link>
 
-          {/* Actions */}
-          <div className="glass-card rounded-2xl p-5 flex flex-col justify-between gap-4">
-            <p className="text-white/40 text-xs uppercase tracking-widest font-medium">
-              Actions
-            </p>
-
-            <a
-              href={imageUrl}
-              download={meta.originalName}
-              className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-medium text-sm transition-all duration-200 hover:shadow-lg hover:shadow-brand-600/30 active:scale-[0.98]"
-            >
-              <Download className="w-4 h-4" />
-              Download Image
-            </a>
-
-            <Link
-              href="/"
-              className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/[0.06] hover:bg-white/10 border border-white/10 text-white/70 hover:text-white font-medium text-sm transition-all duration-200 active:scale-[0.98]"
-            >
-              Create Your Own QR
-            </Link>
+              <a
+                href={imageUrl}
+                download={meta.originalName}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium transition-all duration-200 hover:shadow-lg hover:shadow-brand-600/30 active:scale-[0.97]"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </a>
+            </div>
           </div>
         </div>
       </main>
-
-      <footer className="text-center py-8 px-4 text-white/25 text-xs">
-        QRShare — built with Next.js &amp; Tailwind CSS
-      </footer>
     </>
-  )
-}
-
-function InfoRow({
-  Icon,
-  label,
-  value,
-}: {
-  Icon: React.ElementType
-  label: string
-  value: string
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <Icon className="w-4 h-4 text-brand-400 mt-0.5 shrink-0" aria-hidden />
-      <div className="min-w-0">
-        <p className="text-white/40 text-xs mb-0.5">{label}</p>
-        <p className="text-white/80 text-sm break-all">{value}</p>
-      </div>
-    </div>
   )
 }
