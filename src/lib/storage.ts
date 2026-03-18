@@ -19,18 +19,18 @@ const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN
  * Files are stored directly as uploads/{filename} using the unique filename.
  */
 export async function storeImage(
-  filename: string, // This should now be the unique filename (e.g., "abc123.jpg")
+  filename: string,
   buffer: Buffer,
   mimetype: string,
 ): Promise<string> {
   const blobPath = `uploads/${filename}`
 
   if (USE_BLOB) {
-    const { put } = await import('@vercel/blobs')
+    const { put } = await import('@vercel/blob')
     const blob = await put(blobPath, buffer, {
       access: 'public',
       contentType: mimetype,
-      addRandomSuffix: false, // We're handling uniqueness ourselves
+      addRandomSuffix: false,
     })
     return blob.url
   }
@@ -42,8 +42,6 @@ export async function storeImage(
 
   const dir = join(process.cwd(), 'public', 'uploads')
   if (!existsSync(dir)) await mkdir(dir, { recursive: true })
-  
-  // Save with the unique filename
   await writeFile(join(dir, filename), buffer)
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
@@ -60,7 +58,7 @@ export async function storeMetadata(id: string, metadata: ImageMetadata): Promis
   const json = JSON.stringify(metadata, null, 2)
 
   if (USE_BLOB) {
-    const { put } = await import('@vercel/blobs')
+    const { put } = await import('@vercel/blob')
     await put(`metadata/${id}.json`, json, {
       access: 'public',
       contentType: 'application/json',
@@ -92,12 +90,12 @@ export async function getMetadata(slug: string): Promise<ImageMetadata | null> {
   if (!SLUG_RE.test(slug)) return null
 
   if (USE_BLOB) {
-    const { list } = await import('@vercel/blobs')
+    const { list } = await import('@vercel/blob')
     const { blobs } = await list({ prefix: `metadata/${slug}.json` })
     if (!blobs.length) return null
 
     try {
-      const res = await fetch(blobs[0].url)
+      const res = await fetch(blobs[0].url, { cache: 'no-store' })
       if (!res.ok) return null
       return (await res.json()) as ImageMetadata
     } catch {

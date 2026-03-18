@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     // ── Generate unique ID ─────────────────────────────────────────────
     const uniqueId = uuidv4() // Generate a unique ID for this upload
     
-    // Keep original name for display but use unique ID for storage
+    // Keep original name for display
     const originalName = file.name
     const extension = ext
     
@@ -59,13 +59,12 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Update storeImage to handle the new approach
     const imageUrl = await storeImage(storageFilename, buffer, file.type)
 
     // ── Store metadata (keyed by uniqueId) ────────────────────────────────────────
     const metadata: ImageMetadata = {
       id: uniqueId,
-      originalName: originalName, // Store original name for display
+      originalName: originalName,
       filename: storageFilename,
       imageUrl,
       mimetype: file.type,
@@ -82,7 +81,6 @@ export async function POST(request: NextRequest) {
     const response: UploadResponse = {
       id: uniqueId,
       filename: storageFilename,
-      originalName: originalName, // Add this to your UploadResponse type
       imageUrl,
       imagePageUrl,
       metadata,
