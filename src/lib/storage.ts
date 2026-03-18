@@ -9,6 +9,7 @@
  */
 
 import type { ImageMetadata } from '@/types'
+import { v4 as uuidv4 } from 'uuid'
 
 const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN
 
@@ -16,23 +17,30 @@ const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN
 
 /**
  * Persist an image buffer and return its public-accessible URL.
- * Files are stored directly as uploads/{filename} using the original sanitized name.
+ * Files are stored with unique names to prevent overwrites.
  */
 export async function storeImage(
   filename: string,
   buffer: Buffer,
   mimetype: string,
-): Promise<string> {
-  const blobPath = `uploads/${filename}`
+): Promise<{ imageUrl: string; uniqueFilename: string }> {  // ← Changed return type
+  // Generate unique ID for the file
+  const uniqueId = uuidv4();
+  const extension = filename.split('.').pop() || 'jpg';
+  const uniqueFilename = `${uniqueId}.${extension}`;  // ← Use ID as filename
+  const blobPath = `uploads/${uniqueFilename}`;
 
   if (USE_BLOB) {
     const { put } = await import('@vercel/blob')
     const blob = await put(blobPath, buffer, {
       access: 'public',
       contentType: mimetype,
-      addRandomSuffix: false,
+      addRandomSuffix: false,  // We're handling uniqueness ourselves
     })
-    return blob.url
+    return { 
+      imageUrl: blob.url,
+      uniqueFilename 
+    };
   }
 
   // ── Local filesystem fallback ─────────────────────────────────────────────
@@ -42,17 +50,20 @@ export async function storeImage(
 
   const dir = join(process.cwd(), 'public', 'uploads')
   if (!existsSync(dir)) await mkdir(dir, { recursive: true })
-  await writeFile(join(dir, filename), buffer)
+  await writeFile(join(dir, uniqueFilename), buffer)
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
-  return `${baseUrl}/uploads/${filename}`
+  return { 
+    imageUrl: `${baseUrl}/uploads/${uniqueFilename}`,
+    uniqueFilename 
+  };
 }
 
 // ── Metadata storage ──────────────────────────────────────────────────────────
 
 /**
- * Persist image metadata. The metadata object itself stores the image URL so
- * the display page never has to reconstruct it.
+ * Persist image metadata. The metadata object stores the original filename
+ * for display, but the image URL uses the unique filename.
  */
 export async function storeMetadata(id: string, metadata: ImageMetadata): Promise<void> {
   const json = JSON.stringify(metadata, null, 2)
