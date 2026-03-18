@@ -13,7 +13,7 @@ export async function generateMetadata({
   if (!meta) return { title: 'Image Not Found' }
 
   return {
-    title: `${meta.originalName} — QRShare`,
+    title: `${meta.originalName}- 中文考试服务网`,
     description: 'View this shared image on QRShare.',
     openGraph: {
       title: meta.originalName,
@@ -37,7 +37,8 @@ export default async function ImagePage({ params }: { params: Promise<{ id: stri
   if (!meta) notFound()
 
   const imageUrl = meta.imageUrl
-
+// Remove extension from filename for display
+  const displayName = meta.originalName.replace(/\.[^/.]+$/, "")
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
